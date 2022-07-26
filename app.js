@@ -12,7 +12,9 @@ const requestMiddleware = (req, res, next) => {
     next();//
 };
 
-app.use(express.json())//bady에서 json데이터를 사용할 수 있게 해줌.
+app.use(express.static("static"));
+app.use(express.json());//bady에서 json데이터를 사용할 수 있게 해줌.
+app.use(express.urlencoded())//json 방식이 아닌 URL Encoded형식으로 데이터를 body로 보낸 것을 이 미들웨어로 데이터를 받아옴.
 app.use(requestMiddleware);
 
 app.use("/api", [goodsRouter]);

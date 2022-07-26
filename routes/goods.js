@@ -3,6 +3,7 @@ const Goods = require("../schemas/goods") //..은 상위 폴더로 가는 경로
 const Cart = require("../schemas/cart");
 const router = express.Router();
 
+//장바구니 담기
 router.get("/goods/cart", async (req, res) => {
   const carts = await Cart.find()
   const goodsIds = carts.map((cart) => cart.goodsId)
@@ -10,7 +11,7 @@ router.get("/goods/cart", async (req, res) => {
   const goods = await Goods.find({ goodsId: goodsIds})
 
   res.json({
-      carts: carts.map((cart) => {
+      cart: carts.map((cart) => {
           return {
               quantity: cart.quantity,
               goods: goods.find((item) => item.goodsId === cart.goodsId)
@@ -36,10 +37,10 @@ router.get("/goods", async (req, res) =>{
 router.get("/goods/:goodsId", async (req, res) => {
     const { goodsId } = req.params;
 
-    const [detail] = await Goods.find({ goodsId: Number(goodsId) });
+    const [ goods ] = await Goods.find({ goodsId: Number(goodsId) });
 
     res.json({
-        detail,
+        goods,
     })
     //const [detail] ~ detail:detail과 같은 의미의 코드
     // res.json({
@@ -77,15 +78,17 @@ router.put("/goods/:goodsId/cart", async(req, res) => {
   const { goodsId } = req.params
   const { quantity } = req.body;//body는 json 데이터를 그대로 넘겨받기대문에 type까지 그대로 넘겨받을 수 있어 형변환하지않음.
 
-  if(quantity < 1){
-    return res.status(400).json({
-      errorMessage: "1이상의 값만 입력할 수 있습니다."
-    });//리턴값을 입력해야 조건에 맞았을 때 아래의 코드가 실행이 안됨.
-  }
+  // if(quantity < 1){
+  //   return res.status(400).json({
+  //     errorMessage: "1이상의 값만 입력할 수 있습니다."
+  //   });//리턴값을 입력해야 조건에 맞았을 때 아래의 코드가 실행이 안됨.
+  // }
 
   const existsCarts = await Cart.find({ goodsId : Number(goodsId)});
   if(!existsCarts.length) {
-    await Cart.updateOne({ goodsId: Number(goodsId) }, {$set: { quantity }})    
+    await Cart.create({ goodsId : Number(goodsId), quantity })
+  } else {
+    await Cart.updateOne({ goodsId: Number(goodsId) }, {$set: { quantity }})  
   }
 
   res.json({ success: true })
